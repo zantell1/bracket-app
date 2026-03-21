@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchLiveBracket } from "@/lib/espn";
 import { BRACKET_2026, type Bracket, type Game } from "@/lib/bracket-data";
 import { PARTICIPANTS } from "@/lib/participants";
-import { scoreAll, calcMatchImportance } from "@/lib/scoring";
+import { scoreAll, calcPoolLeverage } from "@/lib/scoring";
 import { winProbability } from "@/lib/kenpom-data";
 
 function getWinner(g: Game): string | null {
@@ -111,9 +111,9 @@ function buildResponse(
   espnGames: Awaited<ReturnType<typeof fetchLiveBracket>>
 ) {
   const scores = scoreAll(participants, bracket);
-  const matchImportance = calcMatchImportance(participants, bracket);
+  const poolLeverage = calcPoolLeverage(participants, bracket, 10);
 
-  const gamesWithProbs = matchImportance.map((g) => ({
+  const leverageWithProbs = poolLeverage.map((g) => ({
     ...g,
     winProbTeam1: winProbability(g.team1, g.team2),
     winProbTeam2: 1 - winProbability(g.team1, g.team2),
@@ -124,7 +124,7 @@ function buildResponse(
   return NextResponse.json({
     bracket,
     scores,
-    matchImportance: gamesWithProbs,
+    poolLeverage: leverageWithProbs,
     liveGames,
     updatedAt: new Date().toISOString(),
   });

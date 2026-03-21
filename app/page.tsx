@@ -5,12 +5,12 @@ import Link from "next/link";
 import Leaderboard from "@/components/Leaderboard";
 import LiveGames from "@/components/LiveGames";
 import MatchImportance from "@/components/MatchImportance";
-import type { ParticipantScore, GameImportance } from "@/lib/scoring";
+import type { ParticipantScore, PoolLeverageGame } from "@/lib/scoring";
 import type { EspnGame } from "@/lib/espn";
 
 interface DashboardData {
   scores: ParticipantScore[];
-  matchImportance: (GameImportance & { winProbTeam1: number; winProbTeam2: number })[];
+  poolLeverage: (PoolLeverageGame & { winProbTeam1: number; winProbTeam2: number })[];
   liveGames: EspnGame[];
   updatedAt: string;
 }
@@ -106,7 +106,7 @@ export default function Home() {
               </div>
               <div className="lg:col-span-2 space-y-8">
                 <LiveGames games={data.liveGames} />
-                <MatchImportance games={data.matchImportance} />
+                <MatchImportance games={data.poolLeverage} />
               </div>
             </div>
           </div>
