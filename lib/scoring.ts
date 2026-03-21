@@ -2,6 +2,18 @@ import type { Bracket, Picks, Game } from "./bracket-data";
 import { ROUND_POINTS, getRoundIndex } from "./bracket-data";
 import type { Participant } from "./participants";
 
+/** Earned points per bracket stage (indices 0–5 = R64 … Championship) */
+export type RoundPointsEarned = [number, number, number, number, number, number];
+
+export const SCOREBOARD_ROUND_LABELS = [
+  "Round of 64",
+  "Round of 32",
+  "Sweet 16",
+  "Round of 8",
+  "Round of 4",
+  "Championship",
+] as const;
+
 export interface ParticipantScore {
   participant: Participant;
   currentPoints: number;
@@ -9,6 +21,8 @@ export interface ParticipantScore {
   correctPicks: number;
   totalDecided: number;
   eliminated: string[];
+  /** Points from correct picks in each round (only final games) */
+  pointsByRound: RoundPointsEarned;
 }
 
 export interface GameImportance {
@@ -34,6 +48,21 @@ function allGames(bracket: Bracket): Game[] {
 function getWinner(game: Game): string | null {
   if (game.status !== "final" || !game.winner) return null;
   return game.winner === 1 ? game.team1.name : game.team2.name;
+}
+
+function calcPointsByRound(picks: Picks, bracket: Bracket): RoundPointsEarned {
+  const by: RoundPointsEarned = [0, 0, 0, 0, 0, 0];
+  for (const game of allGames(bracket)) {
+    const winner = getWinner(game);
+    if (!winner) continue;
+    const pick = picks[game.id];
+    if (pick !== winner) continue;
+    const roundIdx = getRoundIndex(game.id);
+    if (roundIdx >= 1 && roundIdx <= 6) {
+      by[roundIdx - 1] += ROUND_POINTS[roundIdx] ?? 0;
+    }
+  }
+  return by;
 }
 
 function calcCurrentScore(picks: Picks, bracket: Bracket): { points: number; correct: number; decided: number } {
@@ -109,6 +138,7 @@ export function scoreAll(participants: Participant[], bracket: Bracket): Partici
   return participants
     .map((p) => {
       const { points, correct, decided } = calcCurrentScore(p.picks, bracket);
+      const pointsByRound = calcPointsByRound(p.picks, bracket);
       return {
         participant: p,
         currentPoints: points,
@@ -116,6 +146,7 @@ export function scoreAll(participants: Participant[], bracket: Bracket): Partici
         correctPicks: correct,
         totalDecided: decided,
         eliminated: findEliminated(p.picks, bracket),
+        pointsByRound,
       };
     })
     .sort((a, b) => b.currentPoints - a.currentPoints || b.maxPossible - a.maxPossible);
