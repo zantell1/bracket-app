@@ -131,7 +131,7 @@ function RegionBracket({ prefix, picks, results, onPick }: {
   const r32 = [9, 10, 11, 12].map((n) => `${prefix}${n}`);
   const s16 = [13, 14].map((n) => `${prefix}${n}`);
   const e8 = `${prefix}15`;
-  const ROW_H = 68;
+  const ROW_H = 82;
 
   return (
     <div>
