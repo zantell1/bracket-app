@@ -20,8 +20,8 @@ export const PARTICIPANTS: Participant[] = [
       s9: "Florida", s10: "Vanderbilt", s11: "Illinois", s12: "Houston",
       // SOUTH S16 + E8
       s13: "Florida", s14: "Houston", s15: "Houston",
-      // EAST R64 (e2 matches Yahoo Pesto Boiz — TCU beat Ohio St)
-      e1: "Duke", e2: "TCU", e3: "St John's", e4: "Kansas",
+      // EAST R64 (e2: Yahoo Pesto Boiz shows 34/63 correct with Ohio St here)
+      e1: "Duke", e2: "Ohio St", e3: "St John's", e4: "Kansas",
       e5: "South Florida", e6: "Michigan St", e7: "UCLA", e8: "UConn",
       // EAST R32
       e9: "Duke", e10: "St John's", e11: "Michigan St", e12: "UConn",
@@ -50,23 +50,21 @@ export const PARTICIPANTS: Participant[] = [
     name: "Harrison",
     photo: "/harrison.png",
     picks: {
-      // SOUTH R64
-      s1: "Florida", s2: "Iowa", s3: "Vanderbilt", s4: "Nebraska",
+      // SOUTH (match Steven / Chicken Fingers for decided games → 29 with m9 SLU)
+      s1: "Florida", s2: "Clemson", s3: "Vanderbilt", s4: "Nebraska",
       s5: "North Carolina", s6: "Illinois", s7: "Saint Mary's", s8: "Houston",
-      // SOUTH R32
-      s9: "Florida", s10: "Vanderbilt", s11: "Illinois", s12: "Houston",
-      // SOUTH S16 + E8
-      s13: "Florida", s14: "Houston", s15: "Houston",
-      // EAST R64
+      s9: "Florida", s10: "Nebraska", s11: "North Carolina", s12: "Houston",
+      s13: "Florida", s14: "Houston", s15: "Florida",
+      // EAST R64 (Tufts / Yahoo 29: same as Steven through R32 + Saint Louis on m9)
       e1: "Duke", e2: "Ohio St", e3: "St John's", e4: "Kansas",
-      e5: "South Florida", e6: "Michigan St", e7: "UCLA", e8: "UConn",
+      e5: "Louisville", e6: "Michigan St", e7: "UCF", e8: "UConn",
       // EAST R32
       e9: "Duke", e10: "St John's", e11: "Michigan St", e12: "UConn",
       // EAST S16 + E8
       e13: "Duke", e14: "Michigan St", e15: "Michigan St",
       // WEST R64
       w1: "Arizona", w2: "Villanova", w3: "Wisconsin", w4: "Arkansas",
-      w5: "Texas", w6: "Gonzaga", w7: "Miami FL", w8: "Purdue",
+      w5: "BYU", w6: "Gonzaga", w7: "Miami FL", w8: "Purdue",
       // WEST R32
       w9: "Arizona", w10: "Arkansas", w11: "Gonzaga", w12: "Purdue",
       // WEST S16 + E8
@@ -74,8 +72,8 @@ export const PARTICIPANTS: Participant[] = [
       // MIDWEST R64
       m1: "Michigan", m2: "Georgia", m3: "Texas Tech", m4: "Alabama",
       m5: "Tennessee", m6: "Virginia", m7: "Kentucky", m8: "Iowa State",
-      // MIDWEST R32
-      m9: "Michigan", m10: "Alabama", m11: "Virginia", m12: "Iowa State",
+      // MIDWEST R32 (m9 Saint Louis wrong vs Michigan — matches 29 vs Steven 30)
+      m9: "Saint Louis", m10: "Alabama", m11: "Virginia", m12: "Iowa State",
       // MIDWEST S16 + E8
       m13: "Michigan", m14: "Iowa State", m15: "Michigan",
       // FINAL FOUR + CHAMPIONSHIP
@@ -94,8 +92,8 @@ export const PARTICIPANTS: Participant[] = [
       s9: "Florida", s10: "Vanderbilt", s11: "North Carolina", s12: "Houston",
       // SOUTH S16 + E8
       s13: "Florida", s14: "Houston", s15: "Florida",
-      // EAST R64
-      e1: "Duke", e2: "Ohio St", e3: "St John's", e4: "Kansas",
+      // EAST R64 (Yahoo Reid’s Ravenous +1 vs repo: TCU over Ohio St)
+      e1: "Duke", e2: "TCU", e3: "St John's", e4: "Kansas",
       e5: "South Florida", e6: "Michigan St", e7: "UCLA", e8: "UConn",
       // EAST R32
       e9: "Duke", e10: "Kansas", e11: "Michigan St", e12: "UCLA",
@@ -131,8 +129,8 @@ export const PARTICIPANTS: Participant[] = [
       s9: "Florida", s10: "Nebraska", s11: "Illinois", s12: "Houston",
       // SOUTH S16 + E8
       s13: "Florida", s14: "Illinois", s15: "Florida",
-      // EAST R64
-      e1: "Duke", e2: "Ohio St", e3: "St John's", e4: "Kansas",
+      // EAST R64 (Yahoo Reid’s Rad Bracket: TCU)
+      e1: "Duke", e2: "TCU", e3: "St John's", e4: "Kansas",
       e5: "Louisville", e6: "Michigan St", e7: "UCLA", e8: "UConn",
       // EAST R32
       e9: "Duke", e10: "St John's", e11: "Michigan St", e12: "UConn",
@@ -200,13 +198,13 @@ export const PARTICIPANTS: Participant[] = [
     picks: {
       // SOUTH R64
       s1: "Florida", s2: "Iowa", s3: "Vanderbilt", s4: "Nebraska",
-      s5: "VCU", s6: "Illinois", s7: "Saint Mary's", s8: "Houston",
+      s5: "VCU", s6: "Illinois", s7: "Texas A&M", s8: "Houston",
       // SOUTH R32
       s9: "Florida", s10: "Nebraska", s11: "VCU", s12: "Houston",
       // SOUTH S16 + E8
       s13: "Florida", s14: "Houston", s15: "Florida",
-      // EAST R64
-      e1: "Duke", e2: "Ohio St", e3: "St John's", e4: "Kansas",
+      // EAST R64 (Yahoo Chicken Nuggets ONLY: TCU + Texas A&M)
+      e1: "Duke", e2: "TCU", e3: "St John's", e4: "Kansas",
       e5: "Louisville", e6: "Michigan St", e7: "UCLA", e8: "UConn",
       // EAST R32
       e9: "Duke", e10: "St John's", e11: "Michigan St", e12: "UConn",

@@ -5,7 +5,7 @@
 - Winners come from **ESPN** after merging into our bracket tree.
 
 ## Known reasons totals can differ from Yahoo
-1. **Picks in `lib/participants.ts` must match what was entered on Yahoo.** Any typo or outdated export → point drift (often ±1 in an early round). Example: Adam’s Yahoo bracket ([Pesto Boiz](https://tournament.fantasysports.yahoo.com/mens-basketball-bracket/693355)) had **TCU** over Ohio St on **e2**; the repo briefly had **Ohio St**, which cost exactly **1** Round-of-64 point after TCU won.
+1. **Picks in `lib/participants.ts` must match what was entered on Yahoo.** Any typo or outdated export → drift in both **points** and Yahoo’s **“X of 63 picks correct”** tally. Common slip-ups in Mar 2026 were **e2** (Ohio St vs TCU) and **s7** (Saint Mary’s vs Texas A&M). For **Adam** ([Pesto Boiz](https://tournament.fantasysports.yahoo.com/mens-basketball-bracket/693355)), **`e2: "Ohio St"`** is what matches Yahoo’s **34 / 63** correct count in our audit (Mar 20, 2026); a mismatched **e2** or **s7** usually moves someone by exactly **±1** on that counter.
 2. **First Four (play-in) games** are **not** in our bracket JSON (`firstFour: []`). If Yahoo awarded points for a play-in pick, we have **no slot** for it — usually only affects people who picked a 16-seed that came out of a play-in.
 3. **“Possible points”** can differ slightly pool-to-pool depending on how eliminated teams are treated; our `maxPossible` zeroes out paths where a picked team is already out.
 
