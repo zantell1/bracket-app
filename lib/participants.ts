@@ -20,8 +20,8 @@ export const PARTICIPANTS: Participant[] = [
       s9: "Florida", s10: "Vanderbilt", s11: "Illinois", s12: "Houston",
       // SOUTH S16 + E8
       s13: "Florida", s14: "Houston", s15: "Houston",
-      // EAST R64
-      e1: "Duke", e2: "Ohio St", e3: "St John's", e4: "Kansas",
+      // EAST R64 (e2 matches Yahoo Pesto Boiz — TCU beat Ohio St)
+      e1: "Duke", e2: "TCU", e3: "St John's", e4: "Kansas",
       e5: "South Florida", e6: "Michigan St", e7: "UCLA", e8: "UConn",
       // EAST R32
       e9: "Duke", e10: "St John's", e11: "Michigan St", e12: "UConn",
