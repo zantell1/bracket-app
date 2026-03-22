@@ -6,6 +6,8 @@ export interface EspnGame {
   statusDetail: string;
   /** Normalized name of winning team when game is final (from ESPN `competitors[].winner`) */
   winningTeamName?: string;
+  /** True if away won (= `team1` in this row); from winner competitor `homeAway` */
+  winnerIsEspnTeam1?: boolean;
   /** ISO8601 scheduled tip time (UTC from ESPN) */
   startTime?: string;
   /** TV / streaming, e.g. "TNT" or "CBS, truTV" */
@@ -88,7 +90,7 @@ function processEvent(event: any): EspnGame {
   const home = competitors.find((c: { homeAway: string }) => c.homeAway === "home");
   const away = competitors.find((c: { homeAway: string }) => c.homeAway === "away");
 
-  const statusType = event.status?.type?.name ?? "";
+  const statusType = comp?.status?.type?.name || event.status?.type?.name || "";
   let status: EspnGame["status"] = "pre";
   if (statusType === "STATUS_IN_PROGRESS" || statusType === "STATUS_HALFTIME" || statusType === "STATUS_END_PERIOD") {
     status = "in";
@@ -107,6 +109,9 @@ function processEvent(event: any): EspnGame {
   const winningTeamName = winComp
     ? normalizeName(winComp.team?.shortDisplayName ?? winComp.team?.displayName ?? "")
     : undefined;
+  let winnerIsEspnTeam1: boolean | undefined;
+  if (winComp?.homeAway === "away") winnerIsEspnTeam1 = true;
+  else if (winComp?.homeAway === "home") winnerIsEspnTeam1 = false;
 
   return {
     id: event.id,
@@ -119,10 +124,11 @@ function processEvent(event: any): EspnGame {
       score: parseScore(home?.score),
     },
     status,
-    statusDetail: event.status?.type?.shortDetail ?? "",
+    statusDetail: comp?.status?.type?.shortDetail || event.status?.type?.shortDetail || "",
     startTime,
     channel: extractChannel(comp),
     winningTeamName: winningTeamName || undefined,
+    winnerIsEspnTeam1,
   };
 }
 

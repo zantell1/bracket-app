@@ -1,5 +1,6 @@
 import type { Bracket, Picks, Game } from "./bracket-data";
-import { ROUND_POINTS, getRoundIndex } from "./bracket-data";
+import { ROUND_POINTS, getRoundIndex, collectBracketGames } from "./bracket-data";
+import { getResolvedWinnerName } from "./game-result";
 import type { Participant } from "./participants";
 
 /** Earned points per bracket stage (indices 0–5 = R64 … Championship) */
@@ -50,34 +51,13 @@ export interface PoolLeverageGame {
 }
 
 function allGames(bracket: Bracket): Game[] {
-  const games: Game[] = [];
-  for (const region of bracket.regions) {
-    for (const round of region.rounds) {
-      for (const game of round) games.push(game);
-    }
-  }
-  for (const g of bracket.finalFour) games.push(g);
-  if (bracket.championship) games.push(bracket.championship);
-  return games;
-}
-
-function getWinner(game: Game): string | null {
-  if (game.status !== "final") return null;
-  if (game.winner === 1 || game.winner === 2) {
-    return game.winner === 1 ? game.team1.name : game.team2.name;
-  }
-  const s1 = game.score1;
-  const s2 = game.score2;
-  if (s1 !== undefined && s2 !== undefined && s1 !== s2) {
-    return s1 > s2 ? game.team1.name : game.team2.name;
-  }
-  return null;
+  return collectBracketGames(bracket);
 }
 
 function calcPointsByRound(picks: Picks, bracket: Bracket): RoundPointsEarned {
   const by: RoundPointsEarned = [0, 0, 0, 0, 0, 0];
   for (const game of allGames(bracket)) {
-    const winner = getWinner(game);
+    const winner = getResolvedWinnerName(game);
     if (!winner) continue;
     const pick = picks[game.id];
     if (pick !== winner) continue;
@@ -95,7 +75,7 @@ function calcCurrentScore(picks: Picks, bracket: Bracket): { points: number; cor
   let decided = 0;
 
   for (const game of allGames(bracket)) {
-    const winner = getWinner(game);
+    const winner = getResolvedWinnerName(game);
     if (!winner) continue;
     decided++;
     const pick = picks[game.id];
@@ -111,7 +91,7 @@ function calcCurrentScore(picks: Picks, bracket: Bracket): { points: number; cor
 function findEliminated(picks: Picks, bracket: Bracket): string[] {
   const losers = new Set<string>();
   for (const game of allGames(bracket)) {
-    const winner = getWinner(game);
+    const winner = getResolvedWinnerName(game);
     if (!winner) continue;
     const loser = game.team1.name === winner ? game.team2.name : game.team1.name;
     losers.add(loser);
@@ -122,7 +102,7 @@ function findEliminated(picks: Picks, bracket: Bracket): string[] {
     if (losers.has(pick)) {
       const game = allGames(bracket).find((g) => g.id === gameId);
       if (game) {
-        const winner = getWinner(game);
+        const winner = getResolvedWinnerName(game);
         if (winner && winner !== pick) continue;
         if (!winner && losers.has(pick)) eliminated.push(gameId);
       }
@@ -134,7 +114,7 @@ function findEliminated(picks: Picks, bracket: Bracket): string[] {
 function calcMaxPossible(picks: Picks, bracket: Bracket): number {
   const losers = new Set<string>();
   for (const game of allGames(bracket)) {
-    const winner = getWinner(game);
+    const winner = getResolvedWinnerName(game);
     if (!winner) continue;
     const loser = game.team1.name === winner ? game.team2.name : game.team1.name;
     losers.add(loser);
@@ -147,7 +127,7 @@ function calcMaxPossible(picks: Picks, bracket: Bracket): number {
     const game = allGames(bracket).find((g) => g.id === gameId);
 
     if (game) {
-      const winner = getWinner(game);
+      const winner = getResolvedWinnerName(game);
       if (winner) {
         if (winner === pick) max += pts;
       } else {

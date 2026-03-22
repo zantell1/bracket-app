@@ -44,6 +44,20 @@ export const ROUND_POINTS: Record<number, number> = {
   6: 32, // Championship
 };
 
+/** All pickable games (First Four, regions, FF, championship) in stable order. */
+export function collectBracketGames(bracket: Bracket): Game[] {
+  const games: Game[] = [];
+  for (const g of bracket.firstFour) games.push(g);
+  for (const region of bracket.regions) {
+    for (const round of region.rounds) {
+      for (const game of round) games.push(game);
+    }
+  }
+  for (const g of bracket.finalFour) games.push(g);
+  if (bracket.championship) games.push(bracket.championship);
+  return games;
+}
+
 export function findGameById(bracket: Bracket, gameId: string): Game | null {
   for (const region of bracket.regions) {
     for (const round of region.rounds) {
