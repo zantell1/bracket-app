@@ -44,6 +44,21 @@ export const ROUND_POINTS: Record<number, number> = {
   6: 32, // Championship
 };
 
+export function findGameById(bracket: Bracket, gameId: string): Game | null {
+  for (const region of bracket.regions) {
+    for (const round of region.rounds) {
+      for (const g of round) {
+        if (g.id === gameId) return g;
+      }
+    }
+  }
+  for (const g of bracket.finalFour) {
+    if (g.id === gameId) return g;
+  }
+  if (bracket.championship?.id === gameId) return bracket.championship;
+  return null;
+}
+
 export function getRoundIndex(gameId: string): number {
   const m = gameId.match(/^([semw])(\d+)$/);
   if (!m) {

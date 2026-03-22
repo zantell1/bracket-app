@@ -62,8 +62,16 @@ function allGames(bracket: Bracket): Game[] {
 }
 
 function getWinner(game: Game): string | null {
-  if (game.status !== "final" || !game.winner) return null;
-  return game.winner === 1 ? game.team1.name : game.team2.name;
+  if (game.status !== "final") return null;
+  if (game.winner === 1 || game.winner === 2) {
+    return game.winner === 1 ? game.team1.name : game.team2.name;
+  }
+  const s1 = game.score1;
+  const s2 = game.score2;
+  if (s1 !== undefined && s2 !== undefined && s1 !== s2) {
+    return s1 > s2 ? game.team1.name : game.team2.name;
+  }
+  return null;
 }
 
 function calcPointsByRound(picks: Picks, bracket: Bracket): RoundPointsEarned {

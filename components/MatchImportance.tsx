@@ -2,7 +2,34 @@
 import type { PoolLeverageGame } from "@/lib/scoring";
 import { LEVERAGE_WEIGHTS } from "@/lib/scoring";
 
-type GameRow = PoolLeverageGame & { winProbTeam1: number; winProbTeam2: number };
+type GameRow = PoolLeverageGame & {
+  winProbTeam1: number;
+  winProbTeam2: number;
+  startsAt?: string | null;
+  channel?: string | null;
+  gameStatus?: "scheduled" | "in_progress" | "final" | null;
+  score1?: number;
+  score2?: number;
+  statusLabel?: string | null;
+};
+
+function formatStart(iso: string | null | undefined): string {
+  if (!iso) return "Tip time TBD";
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "Tip time TBD";
+    return d.toLocaleString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+  } catch {
+    return "Tip time TBD";
+  }
+}
 
 export default function MatchImportance({ games }: { games: GameRow[] }) {
   if (!games.length) return null;
@@ -25,6 +52,19 @@ export default function MatchImportance({ games }: { games: GameRow[] }) {
       <div className="space-y-3">
         {games.map((g, idx) => {
           const fav = g.winProbTeam1 >= 0.5 ? g.team1 : g.team2;
+          const live =
+            g.gameStatus === "in_progress" &&
+            g.score1 !== undefined &&
+            g.score2 !== undefined &&
+            !Number.isNaN(g.score1) &&
+            !Number.isNaN(g.score2);
+          const final =
+            g.gameStatus === "final" &&
+            g.score1 !== undefined &&
+            g.score2 !== undefined &&
+            !Number.isNaN(g.score1) &&
+            !Number.isNaN(g.score2);
+
           return (
             <div
               key={g.gameId}
@@ -40,9 +80,39 @@ export default function MatchImportance({ games }: { games: GameRow[] }) {
                 </span>
                 <div>
                   <div className="text-[10px] uppercase tracking-wider text-white/30 mb-0.5">{g.round}</div>
-                  <div className="font-semibold text-sm leading-tight">{g.team1}</div>
+                  <div className="font-semibold text-sm leading-tight flex items-center justify-between gap-2">
+                    <span>{g.team1}</span>
+                    {(live || final) && (
+                      <span className="text-base font-black tabular-nums text-white/90">{g.score1}</span>
+                    )}
+                  </div>
                   <div className="text-[10px] text-white/25 my-0.5">vs</div>
-                  <div className="font-semibold text-sm leading-tight">{g.team2}</div>
+                  <div className="font-semibold text-sm leading-tight flex items-center justify-between gap-2">
+                    <span>{g.team2}</span>
+                    {(live || final) && (
+                      <span className="text-base font-black tabular-nums text-white/90">{g.score2}</span>
+                    )}
+                  </div>
+                  <div className="mt-2 text-[10px] text-white/25 space-y-1">
+                    <div>{formatStart(g.startsAt ?? undefined)}</div>
+                    {g.channel && (
+                      <div>
+                        <span className="text-white/35">TV:</span>{" "}
+                        <span className="text-cyan-400/80">{g.channel}</span>
+                      </div>
+                    )}
+                    {live && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 text-[9px] font-bold uppercase tracking-wide">
+                          Live
+                        </span>
+                        {g.statusLabel && <span className="text-white/40">{g.statusLabel}</span>}
+                      </div>
+                    )}
+                    {final && !live && (
+                      <div className="text-white/35 uppercase text-[9px] tracking-wide">Final</div>
+                    )}
+                  </div>
                   <div className="mt-2 text-[10px] text-white/25">
                     Picks:{" "}
                     <span className="text-white/45">

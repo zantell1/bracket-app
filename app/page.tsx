@@ -8,9 +8,20 @@ import MatchImportance from "@/components/MatchImportance";
 import type { ParticipantScore, PoolLeverageGame } from "@/lib/scoring";
 import type { EspnGame } from "@/lib/espn";
 
+interface PoolLeverageRow extends PoolLeverageGame {
+  winProbTeam1: number;
+  winProbTeam2: number;
+  startsAt?: string | null;
+  channel?: string | null;
+  gameStatus?: "scheduled" | "in_progress" | "final" | null;
+  score1?: number;
+  score2?: number;
+  statusLabel?: string | null;
+}
+
 interface DashboardData {
   scores: ParticipantScore[];
-  poolLeverage: (PoolLeverageGame & { winProbTeam1: number; winProbTeam2: number })[];
+  poolLeverage: PoolLeverageRow[];
   liveGames: EspnGame[];
   updatedAt: string;
 }

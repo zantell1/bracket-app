@@ -4,6 +4,12 @@ export interface EspnGame {
   team2: { name: string; score: number | undefined };
   status: "pre" | "in" | "post";
   statusDetail: string;
+  /** Normalized name of winning team when game is final (from ESPN `competitors[].winner`) */
+  winningTeamName?: string;
+  /** ISO8601 scheduled tip time (UTC from ESPN) */
+  startTime?: string;
+  /** TV / streaming, e.g. "TNT" or "CBS, truTV" */
+  channel?: string;
 }
 
 const ESPN_NAME_MAP: Record<string, string> = {
@@ -32,10 +38,22 @@ const ESPN_NAME_MAP: Record<string, string> = {
   "SMU": "SMU",
   "UMBC": "UMBC",
   "USC": "USC",
+  /** Align long / alt ESPN names with `bracket-data` TEAM_IDS keys */
+  "Wright State": "Wright St",
+  "Tennessee State": "Tennessee St",
+  SLU: "Saint Louis",
+  "St. Louis U": "Saint Louis",
 };
 
 function normalizeName(raw: string): string {
-  return ESPN_NAME_MAP[raw] ?? raw;
+  const s = raw.replace(/\u2019/g, "'").replace(/\u2018/g, "'").trim();
+  return ESPN_NAME_MAP[s] ?? ESPN_NAME_MAP[raw] ?? s;
+}
+
+function parseScore(v: unknown): number | undefined {
+  if (v === undefined || v === null || v === "") return undefined;
+  const n = typeof v === "number" ? v : parseInt(String(v), 10);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 const TOURNAMENT_DATES = [
@@ -48,8 +66,25 @@ const TOURNAMENT_DATES = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractChannel(comp: any): string | undefined {
+  const names = new Set<string>();
+  for (const b of comp?.broadcasts ?? []) {
+    for (const n of b.names ?? []) {
+      if (typeof n === "string" && n.trim()) names.add(n.trim());
+    }
+  }
+  for (const g of comp?.geoBroadcasts ?? []) {
+    const sn = g?.media?.shortName;
+    if (typeof sn === "string" && sn.trim()) names.add(sn.trim());
+  }
+  if (!names.size) return undefined;
+  return [...names].sort().join(", ");
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function processEvent(event: any): EspnGame {
-  const competitors = event.competitions?.[0]?.competitors ?? [];
+  const comp = event.competitions?.[0];
+  const competitors = comp?.competitors ?? [];
   const home = competitors.find((c: { homeAway: string }) => c.homeAway === "home");
   const away = competitors.find((c: { homeAway: string }) => c.homeAway === "away");
 
@@ -61,18 +96,33 @@ function processEvent(event: any): EspnGame {
     status = "post";
   }
 
+  const startTime =
+    typeof comp?.date === "string"
+      ? comp.date
+      : typeof event.date === "string"
+        ? event.date
+        : undefined;
+
+  const winComp = competitors.find((c: { winner?: boolean }) => c.winner === true);
+  const winningTeamName = winComp
+    ? normalizeName(winComp.team?.shortDisplayName ?? winComp.team?.displayName ?? "")
+    : undefined;
+
   return {
     id: event.id,
     team1: {
       name: normalizeName(away?.team?.shortDisplayName ?? away?.team?.displayName ?? "TBD"),
-      score: away?.score !== undefined ? parseInt(away.score, 10) : undefined,
+      score: parseScore(away?.score),
     },
     team2: {
       name: normalizeName(home?.team?.shortDisplayName ?? home?.team?.displayName ?? "TBD"),
-      score: home?.score !== undefined ? parseInt(home.score, 10) : undefined,
+      score: parseScore(home?.score),
     },
     status,
     statusDetail: event.status?.type?.shortDetail ?? "",
+    startTime,
+    channel: extractChannel(comp),
+    winningTeamName: winningTeamName || undefined,
   };
 }
 

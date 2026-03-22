@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
 import { fetchLiveBracket } from "@/lib/espn";
-import { BRACKET_2026, type Bracket, type Game } from "@/lib/bracket-data";
+import { BRACKET_2026, findGameById, type Bracket, type Game } from "@/lib/bracket-data";
 import { PARTICIPANTS } from "@/lib/participants";
 import { scoreAll, calcPoolLeverage } from "@/lib/scoring";
 import { winProbability } from "@/lib/kenpom-data";
 
 function getWinner(g: Game): string | null {
-  if (g.status !== "final" || !g.winner) return null;
-  return g.winner === 1 ? g.team1.name : g.team2.name;
+  if (g.status !== "final") return null;
+  if (g.winner === 1 || g.winner === 2) {
+    return g.winner === 1 ? g.team1.name : g.team2.name;
+  }
+  const s1 = g.score1;
+  const s2 = g.score2;
+  if (s1 !== undefined && s2 !== undefined && s1 !== s2) {
+    return s1 > s2 ? g.team1.name : g.team2.name;
+  }
+  return null;
 }
 
 function mergeLiveData(bracket: Bracket, espnGames: Awaited<ReturnType<typeof fetchLiveBracket>>): Bracket {
@@ -34,8 +42,13 @@ function mergeLiveData(bracket: Bracket, espnGames: Awaited<ReturnType<typeof fe
     else if (live.status === "post") status = "final";
 
     let winner: 1 | 2 | undefined = g.winner;
-    if (status === "final" && s1 !== undefined && s2 !== undefined) {
-      winner = s1 > s2 ? 1 : 2;
+    if (status === "final") {
+      if (s1 !== undefined && s2 !== undefined && s1 !== s2) {
+        winner = s1 > s2 ? 1 : 2;
+      } else if (live.winningTeamName) {
+        if (live.winningTeamName === g.team1.name) winner = 1;
+        else if (live.winningTeamName === g.team2.name) winner = 2;
+      }
     }
 
     return { ...g, status, score1: s1 ?? g.score1, score2: s2 ?? g.score2, winner, statusLabel: live.statusDetail || g.statusLabel };
@@ -105,6 +118,10 @@ function mergeLiveData(bracket: Bracket, espnGames: Awaited<ReturnType<typeof fe
   return b;
 }
 
+function espnKey(t1: string, t2: string): string {
+  return [t1, t2].sort().join("||");
+}
+
 function buildResponse(
   bracket: Bracket,
   participants: typeof PARTICIPANTS,
@@ -113,11 +130,26 @@ function buildResponse(
   const scores = scoreAll(participants, bracket);
   const poolLeverage = calcPoolLeverage(participants, bracket, 10);
 
-  const leverageWithProbs = poolLeverage.map((g) => ({
-    ...g,
-    winProbTeam1: winProbability(g.team1, g.team2),
-    winProbTeam2: 1 - winProbability(g.team1, g.team2),
-  }));
+  const espnByTeams = new Map<string, (typeof espnGames)[number]>();
+  for (const eg of espnGames) {
+    espnByTeams.set(espnKey(eg.team1.name, eg.team2.name), eg);
+  }
+
+  const leverageWithProbs = poolLeverage.map((g) => {
+    const bg = findGameById(bracket, g.gameId);
+    const espn = espnByTeams.get(espnKey(g.team1, g.team2));
+    return {
+      ...g,
+      winProbTeam1: winProbability(g.team1, g.team2),
+      winProbTeam2: 1 - winProbability(g.team1, g.team2),
+      startsAt: espn?.startTime ?? null,
+      channel: espn?.channel ?? null,
+      gameStatus: bg?.status ?? null,
+      score1: bg?.score1,
+      score2: bg?.score2,
+      statusLabel: bg?.statusLabel ?? null,
+    };
+  });
 
   const liveGames = espnGames.filter((g) => g.status === "in");
 
